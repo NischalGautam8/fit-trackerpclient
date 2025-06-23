@@ -1,0 +1,234 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Activity, Heart, Droplets, Timer, TrendingUp, Plus, Calendar, RefreshCw } from "lucide-react"
+import Link from "next/link"
+import Navigation from "@/components/navigation"
+import { useRouter } from "next/navigation"
+import { activitiesAPI } from "@/lib/api"
+
+interface IActivity {
+  _id: string
+  activityType: string
+  caloriesBurned: number
+  systolicBloodPressure: number
+  diastolicBloodPressure: number
+  bloodOxygenLevel: number
+  duration: number
+  heartRate: number
+  date: string
+  createdBy: string
+}
+
+export default function Activities() {
+  const [activities, setActivities] = useState<IActivity[]>([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [error, setError] = useState("")
+  const router = useRouter()
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user")
+    if (userData) {
+      setUser(JSON.parse(userData))
+      fetchActivities()
+    } else {
+      router.push("/login")
+    }
+  }, [router])
+
+  const fetchActivities = async () => {
+    try {
+      setError("")
+      const data = await activitiesAPI.getAll()
+      setActivities(data)
+    } catch (error: any) {
+      console.error("Error fetching activities:", error)
+      setError(error.message)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    await fetchActivities()
+  }
+
+  const getActivityIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case "running":
+      case "jogging":
+        return "🏃"
+      case "cycling":
+        return "🚴"
+      case "swimming":
+        return "🏊"
+      case "walking":
+        return "🚶"
+      case "yoga":
+        return "🧘"
+      case "weightlifting":
+        return "🏋️"
+      default:
+        return "💪"
+    }
+  }
+
+  const getBPStatus = (systolic: number, diastolic: number) => {
+    if (systolic < 120 && diastolic < 80) return { status: "Normal", color: "bg-green-100 text-green-800" }
+    if (systolic < 130 && diastolic < 80) return { status: "Elevated", color: "bg-yellow-100 text-yellow-800" }
+    if (systolic < 140 || diastolic < 90) return { status: "High Stage 1", color: "bg-orange-100 text-orange-800" }
+    return { status: "High Stage 2", color: "bg-red-100 text-red-800" }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <Navigation user={user} setUser={setUser} />
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) return null
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Navigation user={user} setUser={setUser} />
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Activities</h1>
+            <p className="text-gray-600">Track and monitor your fitness progress</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleRefresh} disabled={refreshing} className="flex items-center gap-2">
+              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+              {refreshing ? "Refreshing..." : "Refresh"}
+            </Button>
+            <Link href="/activities/create">
+              <Button className="bg-indigo-600 hover:bg-indigo-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Activity
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>
+              {error}
+              <Button onClick={handleRefresh} className="ml-2" size="sm" variant="outline">
+                Try Again
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {activities.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No activities yet</h3>
+              <p className="text-gray-600 mb-6">Start tracking your fitness journey by adding your first activity.</p>
+              <Link href="/activities/create">
+                <Button>Create Your First Activity</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {activities.map((activity) => {
+              const bpStatus = getBPStatus(activity.systolicBloodPressure, activity.diastolicBloodPressure)
+
+              return (
+                <Card key={activity._id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="text-2xl">{getActivityIcon(activity.activityType)}</div>
+                        <div>
+                          <CardTitle className="text-lg">{activity.activityType}</CardTitle>
+                          <CardDescription className="flex items-center">
+                            <Calendar className="h-4 w-4 mr-1" />
+                            {new Date(activity.date).toLocaleDateString("en-US", {
+                              weekday: "short",
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <Badge className={bpStatus.color}>{bpStatus.status}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <TrendingUp className="h-4 w-4 text-red-500" />
+                          <div>
+                            <p className="text-sm text-gray-600">Calories</p>
+                            <p className="font-semibold">{activity.caloriesBurned} cal</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Timer className="h-4 w-4 text-blue-500" />
+                          <div>
+                            <p className="text-sm text-gray-600">Duration</p>
+                            <p className="font-semibold">{activity.duration} min</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Heart className="h-4 w-4 text-pink-500" />
+                          <div>
+                            <p className="text-sm text-gray-600">Heart Rate</p>
+                            <p className="font-semibold">{activity.heartRate} bpm</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Droplets className="h-4 w-4 text-blue-600" />
+                          <div>
+                            <p className="text-sm text-gray-600">Blood Pressure</p>
+                            <p className="font-semibold">
+                              {activity.systolicBloodPressure}/{activity.diastolicBloodPressure}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <div className="h-4 w-4 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full"></div>
+                          <div>
+                            <p className="text-sm text-gray-600">Blood Oxygen</p>
+                            <p className="font-semibold">{activity.bloodOxygenLevel}%</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        )}
+      </main>
+    </div>
+  )
+}
