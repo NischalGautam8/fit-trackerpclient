@@ -11,7 +11,7 @@ import Navigation from "@/components/navigation"
 import { useRouter } from "next/navigation"
 import { activitiesAPI } from "@/lib/api"
 
-interface IActivity {
+export interface IActivity {
   _id: string
   activityType: string
   caloriesBurned: number
@@ -162,7 +162,7 @@ const handleDeleteActivity = async (id:string)=>{
               const bpStatus = getBPStatus(activity.systolicBloodPressure, activity.diastolicBloodPressure)
 
               return (
-
+                <Link href={`/activities/${activity._id}`} key={activity._id} className="no-underline">
                 <Card key={activity._id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -237,6 +237,7 @@ const handleDeleteActivity = async (id:string)=>{
                     </div>
                   </CardContent>
                 </Card>
+                </Link>
               )
             })}
           </div>
