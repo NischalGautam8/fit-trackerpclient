@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Activity, Heart, Droplets, Timer, TrendingUp, Plus, Calendar, RefreshCw } from "lucide-react"
+import { Activity, Heart, Droplets, Timer, TrendingUp, Plus, Calendar, RefreshCw, Trash } from "lucide-react"
 import Link from "next/link"
 import Navigation from "@/components/navigation"
 import { useRouter } from "next/navigation"
@@ -41,7 +41,16 @@ export default function Activities() {
       router.push("/login")
     }
   }, [router])
-
+const handleDeleteActivity = async (id:string)=>{
+  try{
+    if (confirm("Are you sure want to delete this activity?")) {
+      const data = await activitiesAPI.delete(id);
+      console.log(data);
+    }
+  }catch(err){
+    console.log(err);
+  }
+}
   const fetchActivities = async () => {
     try {
       setError("")
@@ -153,6 +162,7 @@ export default function Activities() {
               const bpStatus = getBPStatus(activity.systolicBloodPressure, activity.diastolicBloodPressure)
 
               return (
+
                 <Card key={activity._id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -171,7 +181,10 @@ export default function Activities() {
                           </CardDescription>
                         </div>
                       </div>
-                      <Badge className={bpStatus.color}>{bpStatus.status}</Badge>
+                      {/* <Badge className={bpStatus.color}>{bpStatus.status}</Badge> */}
+                      <Trash onClick={() => {
+                        handleDeleteActivity(activity._id);
+                        console.log('delete');}} className="hover:bg-gray-100 h-6 w-6 p-1 rounded-full"/>
                     </div>
                   </CardHeader>
                   <CardContent>

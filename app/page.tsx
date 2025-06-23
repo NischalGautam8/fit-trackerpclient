@@ -72,7 +72,8 @@ export default function Dashboard() {
     setLoading(true)
     await fetchActivities()
   }
-
+// gives overall average across all activities
+  // returns total calories burned, average heart rate, total duration, and total activities
   const getStats = () => {
     const totalCalories = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0)
     const avgHeartRate =
@@ -84,12 +85,24 @@ export default function Dashboard() {
 
     return { totalCalories, avgHeartRate, totalDuration, totalActivities }
   }
-
+// groups by date , for given date 6/23/2025 gives data such as caloriesburned,duration:40, activities 1
   const getChartData = () => {
     // Sort activities by date
     const sortedActivities = [...activities].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-    // Group by date for daily trends
+    // Group by date for daily trends 
+    // daily data looks like this 
+  //   {
+  // '6/20/2025': {
+  //   date: '6/20/2025',
+  //   calories: 500,
+  //   duration: 50,
+  //   heartRate: [120, 110],
+  //   systolic: [120, 115],
+  //   diastolic: [80, 75],
+  //   activities: 2
+  // },
+
     const dailyData = sortedActivities.reduce((acc, activity) => {
       const date = new Date(activity.date).toLocaleDateString()
       if (!acc[date]) {
@@ -112,7 +125,18 @@ export default function Dashboard() {
       return acc
     }, {} as any)
 
-    // Convert to array and calculate averages
+    // Convert to array and calculate averages 
+    // chart data looks like 
+  //   [
+  // {
+  //   date: '6/20/2025',
+  //   calories: 500,
+  //   duration: 50,
+  //   avgHeartRate: 115,
+  //   avgSystolic: 118,
+  //   avgDiastolic: 78,
+  //   activities: 2
+  // }],
     const chartData = Object.values(dailyData).map((day: any) => ({
       date: day.date,
       calories: day.calories,
