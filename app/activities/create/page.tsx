@@ -85,6 +85,7 @@ export default function CreateActivity() {
         diastolicBloodPressure: Number.parseInt(diastolicBP),
         bloodOxygenLevel: Number.parseInt(bloodOxygen),
         date: new Date(date).toISOString(),
+        createdBy: user.id,
       }
 
       await activitiesAPI.create(activityData)
