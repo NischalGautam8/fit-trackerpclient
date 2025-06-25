@@ -1,12 +1,38 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Activity, Heart, Droplets, Timer, TrendingUp, Plus, Calendar, RefreshCw, Trash } from "lucide-react"
+import {
+  Activity,
+  Heart,
+  Droplets,
+  Timer,
+  TrendingUp,
+  Plus,
+  Calendar,
+  RefreshCw,
+  Trash
+} from "lucide-react"
 import Link from "next/link"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import React from "react"
 import Navigation from "@/components/navigation"
 import { useRouter } from "next/navigation"
 import { activitiesAPI } from "@/lib/api"
@@ -30,6 +56,9 @@ export default function Activities() {
   const [refreshing, setRefreshing] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [error, setError] = useState("")
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [postContent, setPostContent] = useState("")
+  const [selectedActivity, setSelectedActivity] = useState<IActivity | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -41,23 +70,24 @@ export default function Activities() {
       router.push("/login")
     }
   }, [router])
-const handleDeleteActivity = async (id:string)=>{
-  try{
-    if (confirm("Are you sure want to delete this activity?")) {
-      const data = await activitiesAPI.delete(id);
-      console.log(data);
+
+  const handleDeleteActivity = async (id: string) => {
+    try {
+      if (confirm("Are you sure want to delete this activity?")) {
+        await activitiesAPI.delete(id)
+        fetchActivities()
+      }
+    } catch (err) {
+      console.log(err)
     }
-  }catch(err){
-    console.log(err);
   }
-}
+
   const fetchActivities = async () => {
     try {
       setError("")
       const data = await activitiesAPI.getAll()
       setActivities(data)
     } catch (error: any) {
-      console.error("Error fetching activities:", error)
       setError(error.message)
     } finally {
       setLoading(false)
@@ -91,9 +121,12 @@ const handleDeleteActivity = async (id:string)=>{
   }
 
   const getBPStatus = (systolic: number, diastolic: number) => {
-    if (systolic < 120 && diastolic < 80) return { status: "Normal", color: "bg-green-100 text-green-800" }
-    if (systolic < 130 && diastolic < 80) return { status: "Elevated", color: "bg-yellow-100 text-yellow-800" }
-    if (systolic < 140 || diastolic < 90) return { status: "High Stage 1", color: "bg-orange-100 text-orange-800" }
+    if (systolic < 120 && diastolic < 80)
+      return { status: "Normal", color: "bg-green-100 text-green-800" }
+    if (systolic < 130 && diastolic < 80)
+      return { status: "Elevated", color: "bg-yellow-100 text-yellow-800" }
+    if (systolic < 140 || diastolic < 90)
+      return { status: "High Stage 1", color: "bg-orange-100 text-orange-800" }
     return { status: "High Stage 2", color: "bg-red-100 text-red-800" }
   }
 
@@ -113,7 +146,6 @@ const handleDeleteActivity = async (id:string)=>{
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Navigation user={user} setUser={setUser} />
-
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -162,8 +194,11 @@ const handleDeleteActivity = async (id:string)=>{
               const bpStatus = getBPStatus(activity.systolicBloodPressure, activity.diastolicBloodPressure)
 
               return (
-                <Link href={`/activities/${activity._id}`} key={activity._id} className="no-underline">
-                <Card key={activity._id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={activity._id}
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => router.push(`/activities/${activity._id}`)}
+                >
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
@@ -181,10 +216,22 @@ const handleDeleteActivity = async (id:string)=>{
                           </CardDescription>
                         </div>
                       </div>
-                      {/* <Badge className={bpStatus.color}>{bpStatus.status}</Badge> */}
-                      <Trash onClick={() => {
-                        handleDeleteActivity(activity._id);
-                        console.log('delete');}} className="hover:bg-gray-100 h-6 w-6 p-1 rounded-full"/>
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Trash
+                          onClick={() => handleDeleteActivity(activity._id)}
+                          className="hover:bg-gray-100 h-6 w-6 p-1 rounded-full"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDialogOpen(true)
+                            setSelectedActivity(activity)
+                          }}
+                        >
+                          Post
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -197,7 +244,6 @@ const handleDeleteActivity = async (id:string)=>{
                             <p className="font-semibold">{activity.caloriesBurned} cal</p>
                           </div>
                         </div>
-
                         <div className="flex items-center space-x-2">
                           <Timer className="h-4 w-4 text-blue-500" />
                           <div>
@@ -205,7 +251,6 @@ const handleDeleteActivity = async (id:string)=>{
                             <p className="font-semibold">{activity.duration} min</p>
                           </div>
                         </div>
-
                         <div className="flex items-center space-x-2">
                           <Heart className="h-4 w-4 text-pink-500" />
                           <div>
@@ -214,7 +259,6 @@ const handleDeleteActivity = async (id:string)=>{
                           </div>
                         </div>
                       </div>
-
                       <div className="space-y-3">
                         <div className="flex items-center space-x-2">
                           <Droplets className="h-4 w-4 text-blue-600" />
@@ -225,7 +269,6 @@ const handleDeleteActivity = async (id:string)=>{
                             </p>
                           </div>
                         </div>
-
                         <div className="flex items-center space-x-2">
                           <div className="h-4 w-4 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full"></div>
                           <div>
@@ -237,11 +280,60 @@ const handleDeleteActivity = async (id:string)=>{
                     </div>
                   </CardContent>
                 </Card>
-                </Link>
               )
             })}
           </div>
         )}
+
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Post Activity</DialogTitle>
+              <DialogDescription>Add additional content to your post.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="content" className="text-right">Content</Label>
+                <Textarea
+                  id="content"
+                  value={postContent}
+                  onChange={(e) => setPostContent(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={() => {
+                if (selectedActivity) {
+                 const res= fetch("http://localhost:5001/posts", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      ...selectedActivity,
+                      content: postContent,
+                      username: user.username,
+                    }),
+                  })
+                    .then((response) => response.json())
+                    .then(() => {
+                      setDialogOpen(false)
+                      setPostContent("")
+                      setSelectedActivity(null)
+                      fetchActivities();
+                    })
+                    .catch((error) => {
+                      console.error("Error:", error)
+                    })
+                    console.log(res);
+                }
+              }}>
+                Post
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   )

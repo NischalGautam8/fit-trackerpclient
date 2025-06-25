@@ -36,6 +36,12 @@ export default function Navigation({ user, setUser }: NavigationProps) {
                 Activities
               </Button>
             </Link>
+            <Link href="/posts">
+              <Button variant="ghost" size="sm">
+                <List className="h-4 w-4 mr-2" />
+                Posts
+              </Button>
+            </Link>
             <Link href="/activities/create">
               <Button variant="ghost" size="sm">
                 <Plus className="h-4 w-4 mr-2" />
