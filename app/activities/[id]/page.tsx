@@ -225,7 +225,7 @@ function Page({ params }: { params: { id: string } }) {
                           </span>
                         </div>
                         <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
-                          AI Generated
+                          AI Recommended
                         </Badge>
                       </div>
                       <div className="prose prose-sm max-w-none">
