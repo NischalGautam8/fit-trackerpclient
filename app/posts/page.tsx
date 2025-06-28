@@ -65,35 +65,77 @@ export default function Posts() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-4"> Public Posts</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">Public Posts</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.map((post) => (
-          <Card key={post._id} className="bg-white shadow-md rounded-lg overflow-hidden">
-            <CardHeader className="flex flex-col items-start p-4">
-              <CardTitle className="text-lg font-semibold">{post.username}</CardTitle>
-              <CardDescription className="text-sm text-gray-500">
-                {moment(post.createdAt).format("MMMM D, YYYY h:mm A")}
-              </CardDescription>
+          <Card key={post._id} className="bg-white shadow-lg hover:shadow-xl transition-shadow rounded-xl overflow-hidden border-0">
+            <CardHeader className="flex flex-col items-start p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+              <div className="flex items-center w-full mb-2">
+                <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold mr-3">
+                  {post.username &&post.username.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1">
+                  <CardTitle className="text-lg font-semibold text-gray-900">{post.username}</CardTitle>
+                  <CardDescription className="text-xs text-gray-500">
+                    {moment(post.createdAt).format("MMMM D, YYYY h:mm A")}
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="p-4">
-              <CardDescription className="text-gray-700 mb-4">{post.content}</CardDescription>
-              <div className="text-sm text-gray-500">
-                Activity Type: {post.activityType}
+            <CardContent className="p-5">
+              <p className="text-gray-700 mb-4 text-base leading-relaxed">{post.content}</p>
+              
+              <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                <div className="flex items-center mb-3">
+                  <Activity className="h-5 w-5 text-indigo-600 mr-2" />
+                  <span className="font-medium text-indigo-600">{post.activityType}</span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center text-sm">
+                      <div className="w-4 h-4 mr-2 rounded-full bg-red-100 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                      </div>
+                      <span className="text-gray-600">Calories: <span className="font-medium">{post.caloriesBurned}</span></span>
+                    </div>
+                    
+                    <div className="flex items-center text-sm">
+                      <div className="w-4 h-4 mr-2 rounded-full bg-blue-100 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      </div>
+                      <span className="text-gray-600">Duration: <span className="font-medium">{post.duration} min</span></span>
+                    </div>
+                    
+                    <div className="flex items-center text-sm">
+                      <div className="w-4 h-4 mr-2 rounded-full bg-pink-100 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+                      </div>
+                      <span className="text-gray-600">Heart Rate: <span className="font-medium">{post.heartRate} bpm</span></span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center text-sm">
+                      <div className="w-4 h-4 mr-2 rounded-full bg-green-100 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      </div>
+                      <span className="text-gray-600">Blood Oxygen: <span className="font-medium">{post.bloodOxygenLevel}%</span></span>
+                    </div>
+                    
+                    <div className="flex items-center text-sm">
+                      <div className="w-4 h-4 mr-2 rounded-full bg-purple-100 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                      </div>
+                      <span className="text-gray-600">BP: <span className="font-medium">{post.systolicBloodPressure}/{post.diastolicBloodPressure}</span></span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="text-sm text-gray-500">
-                Calories Burned: {post.caloriesBurned}
-              </div>
-              <div className="text-sm text-gray-500">
-               Blood Oxygen: {post.bloodOxygenLevel}
-              </div>
-              <div className="text-sm text-gray-500">
-                Diastolic Burned: {post.diastolicBloodPressure}
-              </div>
-              <div className="text-sm text-gray-500">
-                Systolic BloodPressure: {post.systolicBloodPressure}
-              </div>
-              <div className="text-sm text-gray-500">
-                HeartRate: {post.heartRate}
+              
+              <div className="text-xs text-gray-500 flex items-center">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>
+                Posted {moment(post.createdAt).fromNow()}
               </div>
             </CardContent>
           </Card>

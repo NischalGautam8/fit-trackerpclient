@@ -305,7 +305,7 @@ export default function Activities() {
             <DialogFooter>
               <Button onClick={() => {
                 if (selectedActivity) {
-                 const res= fetch("http://localhost:5001/posts", {
+                  fetch("http://localhost:5001/posts", {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json",
@@ -317,16 +317,20 @@ export default function Activities() {
                     }),
                   })
                     .then((response) => response.json())
-                    .then(() => {
-                      setDialogOpen(false)
-                      setPostContent("")
-                      setSelectedActivity(null)
-                      fetchActivities();
+                    .then((data) => {
+                      if (data.message === "Offensive language detected. Please revise your post.") {
+                        setError("Offensive language detected. Please revise your post.");
+                      } else {
+                        setDialogOpen(false);
+                        setPostContent("");
+                        setSelectedActivity(null);
+                        fetchActivities();
+                      }
                     })
                     .catch((error) => {
-                      console.error("Error:", error)
-                    })
-                    console.log(res);
+                      setError("Failed to create post");
+                      console.error("Error:", error);
+                    });
                 }
               }}>
                 Post
