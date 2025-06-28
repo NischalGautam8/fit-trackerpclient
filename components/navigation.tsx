@@ -5,6 +5,17 @@ import { Activity, LogOut, User, Plus, List } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { authAPI } from "@/lib/api"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface NavigationProps {
   user: any
@@ -13,12 +24,6 @@ interface NavigationProps {
 
 export default function Navigation({ user, setUser }: NavigationProps) {
   const router = useRouter()
-
-  const handleLogout = () => {
-    authAPI.logout()
-    setUser(null)
-    router.push("/login")
-  }
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -52,10 +57,30 @@ export default function Navigation({ user, setUser }: NavigationProps) {
               <User className="h-4 w-4 text-gray-600" />
               <span className="text-sm text-gray-700">{user?.name}</span>
             </div>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action will log you out of the application.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => {
+                    authAPI.logout();
+                    setUser(null);
+                    router.push("/login");
+                  }}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>

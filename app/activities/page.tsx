@@ -34,6 +34,17 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import React from "react"
 import Navigation from "@/components/navigation"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation"
 import { activitiesAPI } from "@/lib/api"
 
@@ -73,14 +84,12 @@ export default function Activities() {
 
   const handleDeleteActivity = async (id: string) => {
     try {
-      if (confirm("Are you sure want to delete this activity?")) {
-        await activitiesAPI.delete(id)
-        fetchActivities()
-      }
+      await activitiesAPI.delete(id);
+      fetchActivities();
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
-  }
+  };
 
   const fetchActivities = async () => {
     try {
@@ -217,10 +226,25 @@ export default function Activities() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                        <Trash
-                          onClick={() => handleDeleteActivity(activity._id)}
-                          className="hover:bg-gray-100 h-6 w-6 p-1 rounded-full"
-                        />
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Trash className="hover:bg-gray-100 h-6 w-6 p-1 rounded-full" />
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. Are you sure you want to delete this activity?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteActivity(activity._id)}>
+                                Continue
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                         <Button
                           size="sm"
                           onClick={(e) => {
