@@ -47,6 +47,12 @@ export default function Navigation({ user, setUser }: NavigationProps) {
                 Posts
               </Button>
             </Link>
+            <Link href="/diet-plan-generator">
+              <Button variant="ghost" size="sm">
+                <List className="h-4 w-4 mr-2" />
+                Diet Plan Generator
+              </Button>
+            </Link>
             <Link href="/activities/create">
               <Button variant="ghost" size="sm">
                 <Plus className="h-4 w-4 mr-2" />

@@ -5,6 +5,7 @@ import { Activity } from "lucide-react";
 import moment from "moment";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Navigation from "@/components/navigation";
 
 interface IPost {
   _id: string;
@@ -28,6 +29,7 @@ export default function Posts() {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -64,8 +66,10 @@ export default function Posts() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Public Posts</h1>
+    <div>
+      <Navigation user={user} setUser={setUser} />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Public Posts</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.map((post) => (
           <Card key={post._id} className="bg-white shadow-lg hover:shadow-xl transition-shadow rounded-xl overflow-hidden border-0">
@@ -141,6 +145,7 @@ export default function Posts() {
           </Card>
         ))}
       </div>
+    </div>
     </div>
   );
 }
