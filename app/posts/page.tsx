@@ -1,11 +1,19 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Activity } from "lucide-react";
 import moment from "moment";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Navigation from "@/components/navigation";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface IPost {
   _id: string;
@@ -23,6 +31,7 @@ interface IPost {
   createdAt: string;
   updatedAt: string;
   __v: number;
+  image?: string;
 }
 
 export default function Posts() {
@@ -30,24 +39,32 @@ export default function Posts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const fetchPosts = async (page: number) => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await fetch(`http://localhost:5001/posts?page=${page}&limit=6`);
+      const data = await response.json();
+      setPosts(data.posts);
+      setTotalPages(data.totalPages);
+    } catch (error: any) {
+      console.error("Error fetching posts:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        setError("");
-        const response = await fetch("http://localhost:5001/posts");
-        const data = await response.json();
-        setPosts(data);
-      } catch (error: any) {
-        console.error("Error fetching posts:", error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchPosts(currentPage);
+  }, [currentPage]);
 
-    fetchPosts();
-  }, []);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   if (loading) {
     return (
@@ -68,82 +85,91 @@ export default function Posts() {
   return (
     <div>
       <Navigation user={user} setUser={setUser} />
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Public Posts</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {posts.map((post) => (
-          <Card key={post._id} className="bg-white shadow-lg hover:shadow-xl transition-shadow rounded-xl overflow-hidden border-0">
-            <CardHeader className="flex flex-col items-start p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-              <div className="flex items-center w-full mb-2">
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">Feed</h1>
+        <div className="space-y-8">
+          {posts.map((post) => (
+            <Card key={post._id} className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <CardHeader className="p-4 flex flex-row items-center">
                 <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold mr-3">
-                  {post.username &&post.username.charAt(0).toUpperCase()}
+                  {post.username && post.username.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-lg font-semibold text-gray-900">{post.username}</CardTitle>
-                  <CardDescription className="text-xs text-gray-500">
-                    {moment(post.createdAt).format("MMMM D, YYYY h:mm A")}
-                  </CardDescription>
+                  <CardTitle className="text-sm font-bold text-gray-900">{post.username}</CardTitle>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-5">
-              <p className="text-gray-700 mb-4 text-base leading-relaxed">{post.content}</p>
-              
-              <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                <div className="flex items-center mb-3">
-                  <Activity className="h-5 w-5 text-indigo-600 mr-2" />
-                  <span className="font-medium text-indigo-600">{post.activityType}</span>
+              </CardHeader>
+              {post.image && (
+                <div className="w-full bg-gray-100">
+                  <img src={post.image} alt="Post image" className="w-full h-full object-cover" style={{ aspectRatio: '4/5' }} />
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm">
-                      <div className="w-4 h-4 mr-2 rounded-full bg-red-100 flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                      </div>
-                      <span className="text-gray-600">Calories: <span className="font-medium">{post.caloriesBurned}</span></span>
+              )}
+              <CardContent className="p-4">
+                <p className="text-gray-800 text-base mb-4">
+                  {post.content}
+                </p>
+
+                {post.activityType && (
+                  <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                    <div className="flex items-center mb-3">
+                      <Activity className="h-5 w-5 text-indigo-600 mr-2" />
+                      <span className="font-medium text-indigo-600">{post.activityType}</span>
                     </div>
-                    
-                    <div className="flex items-center text-sm">
-                      <div className="w-4 h-4 mr-2 rounded-full bg-blue-100 flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                      </div>
-                      <span className="text-gray-600">Duration: <span className="font-medium">{post.duration} min</span></span>
-                    </div>
-                    
-                    <div className="flex items-center text-sm">
-                      <div className="w-4 h-4 mr-2 rounded-full bg-pink-100 flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-                      </div>
-                      <span className="text-gray-600">Heart Rate: <span className="font-medium">{post.heartRate} bpm</span></span>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <span>Calories: <span className="font-medium">{post.caloriesBurned}</span></span>
+                      <span>Duration: <span className="font-medium">{post.duration} min</span></span>
+                      <span>Heart Rate: <span className="font-medium">{post.heartRate} bpm</span></span>
+                      <span>Blood Oxygen: <span className="font-medium">{post.bloodOxygenLevel}%</span></span>
+                      <span className="col-span-2">BP: <span className="font-medium">{post.systolicBloodPressure}/{post.diastolicBloodPressure}</span></span>
                     </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm">
-                      <div className="w-4 h-4 mr-2 rounded-full bg-green-100 flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      </div>
-                      <span className="text-gray-600">Blood Oxygen: <span className="font-medium">{post.bloodOxygenLevel}%</span></span>
-                    </div>
-                    
-                    <div className="flex items-center text-sm">
-                      <div className="w-4 h-4 mr-2 rounded-full bg-purple-100 flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                      </div>
-                      <span className="text-gray-600">BP: <span className="font-medium">{post.systolicBloodPressure}/{post.diastolicBloodPressure}</span></span>
-                    </div>
-                  </div>
+                )}
+
+                <div className="text-xs text-gray-500">
+                  {moment(post.createdAt).fromNow()}
                 </div>
-              </div>
-              
-              <div className="text-xs text-gray-500 flex items-center">
-                <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>
-                Posted {moment(post.createdAt).fromNow()}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      <div className="mt-8">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePageChange(currentPage - 1);
+                }}
+                className={currentPage === 1 ? "pointer-events-none text-gray-400" : ""}
+              />
+            </PaginationItem>
+            {[...Array(totalPages)].map((_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(i + 1);
+                  }}
+                  isActive={currentPage === i + 1}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePageChange(currentPage + 1);
+                }}
+                className={currentPage === totalPages ? "pointer-events-none text-gray-400" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
     </div>

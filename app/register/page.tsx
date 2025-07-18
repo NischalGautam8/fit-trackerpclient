@@ -16,6 +16,7 @@ import { authAPI } from "@/lib/api"
 export default function Register() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -37,7 +38,7 @@ export default function Register() {
     }
 
     try {
-      await authAPI.register(name, email, password)
+      await authAPI.register(name, email, password,username)
       setSuccess("Account created successfully! Redirecting to login...")
       setTimeout(() => {
         router.push("/login")
@@ -94,6 +95,18 @@ export default function Register() {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
                 disabled={loading}
               />

@@ -31,6 +31,7 @@ import {
   DialogFooter
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import React from "react"
 import Navigation from "@/components/navigation"
@@ -70,6 +71,7 @@ export default function Activities() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [postContent, setPostContent] = useState("")
   const [selectedActivity, setSelectedActivity] = useState<IActivity | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -325,38 +327,54 @@ export default function Activities() {
                   className="col-span-3"
                 />
               </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="picture" className="text-right">
+                  Picture
+                </Label>
+                <Input
+                  id="picture"
+                  type="file"
+                  className="col-span-3"
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                />
+              </div>
             </div>
             <DialogFooter>
-              <Button onClick={() => {
-                if (selectedActivity) {
-                  fetch("http://localhost:5001/posts", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      ...selectedActivity,
-                      content: postContent,
-                      username: user.username,
-                    }),
-                  })
-                    .then((response) => response.json())
-                    .then((data) => {
-                      if (data.message === "Offensive language detected. Please revise your post.") {
-                        setError("Offensive language detected. Please revise your post.");
-                      } else {
-                        setDialogOpen(false);
-                        setPostContent("");
-                        setSelectedActivity(null);
-                        fetchActivities();
-                      }
+              <Button
+                onClick={async () => {
+                  if (selectedActivity) {
+                    const formData = new FormData()
+                    formData.append("content", postContent)
+                    formData.append("username", user.username)
+                    Object.entries(selectedActivity).forEach(([key, value]) => {
+                      formData.append(key, value)
                     })
-                    .catch((error) => {
-                      setError("Failed to create post");
-                      console.error("Error:", error);
-                    });
-                }
-              }}>
+                    if (selectedFile) {
+                      formData.append("file", selectedFile)
+                    }
+
+                    try {
+                      const response = await fetch("http://localhost:5001/posts", {
+                        method: "POST",
+                        body: formData,
+                      })
+                      const data = await response.json()
+                      if (data.message === "Offensive language detected. Please revise your post.") {
+                        setError("Offensive language detected. Please revise your post.")
+                      } else {
+                        setDialogOpen(false)
+                        setPostContent("")
+                        setSelectedActivity(null)
+                        setSelectedFile(null)
+                        fetchActivities()
+                      }
+                    } catch (error) {
+                      setError("Failed to create post")
+                      console.error("Error:", error)
+                    }
+                  }
+                }}
+              >
                 Post
               </Button>
             </DialogFooter>

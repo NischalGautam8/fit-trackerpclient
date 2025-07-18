@@ -18,9 +18,9 @@ export const authAPI = {
     }
   },
 
-  register: async (name: string, email: string, password: string) => {
+  register: async (name: string, email: string, password: string,username:string) => {
     try {
-      const response = await api.post("/users/register", { name, email, password })
+      const response = await api.post("/users/register", { name, email, password,username })
       return response.data
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "Registration failed")
