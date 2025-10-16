@@ -2,7 +2,8 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { AuthProvider } from "@/contexts/auth-context"
+import { Providers } from "./providers"
+import ChatWidget from "@/components/chat-widget" // Import the new ChatWidget
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -20,7 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>{children}</AuthProvider>
+        <Providers>
+          {children}
+          <ChatWidget /> {/* Add the ChatWidget here */}
+        </Providers>
       </body>
     </html>
   )

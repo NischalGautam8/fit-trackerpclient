@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Activity, LogOut, User, Plus, List } from "lucide-react"
+import { Activity, LogOut, User, Plus, List, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { authAPI } from "@/lib/api"
